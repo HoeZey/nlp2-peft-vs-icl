@@ -17,4 +17,5 @@ cd $HOME/nlp2/
 source activate nlp2
 srun python -u src/main.py \
     --flag ...
+    # TODO
 conda deactivate

@@ -1,5 +1,5 @@
 [project]
-name = "nlp2-llama-peft"
+name = "nlp2-peft-vs-icl"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
