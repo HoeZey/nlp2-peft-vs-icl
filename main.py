@@ -1,4 +1,4 @@
-from src.data import get_aime_1983_to_2024
+from data import get_aime_1983_to_2024
 
 
 def main():
