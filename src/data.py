@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 from datasets import load_dataset
 from dotenv import load_dotenv
@@ -14,3 +15,10 @@ def get_aime_1983_to_2024(split=None, env_path="./secrets.env"):
 
 def get_aime_2025(split=None, env_path="./secrets.env"):
     return get_dataset("opencompass/AIME2025", split, env_path)
+
+
+@dataclass(kw_only=True)
+class DataLoaderParams:
+    batch_size: int
+    shuffle: bool
+    num_workers: int = 0
