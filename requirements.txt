@@ -315,7 +315,9 @@ pygments==2.19.1
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.1.0
-    # via uvicorn
+    # via
+    #   nlp2-peft-vs-icl (pyproject.toml)
+    #   uvicorn
 python-json-logger==3.3.0
     # via vllm
 python-multipart==0.0.20

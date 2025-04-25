@@ -1319,6 +1319,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "argparse" },
     { name = "datasets" },
+    { name = "python-dotenv" },
     { name = "vllm" },
 ]
 
@@ -1326,6 +1327,7 @@ dependencies = [
 requires-dist = [
     { name = "argparse", specifier = ">=1.4.0" },
     { name = "datasets", specifier = ">=3.5.0" },
+    { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "vllm", specifier = ">=0.8.4" },
 ]
 
