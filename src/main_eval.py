@@ -2,7 +2,6 @@ import argparse
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 from datasets import load_dataset
-from dotenv import load_dotenv
 from evaluation.evaluate import evaluate, FewshotSampler
 from hf import hf_login
 

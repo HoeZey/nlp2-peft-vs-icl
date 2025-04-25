@@ -1,14 +1,8 @@
-from data import get_aime_1983_to_2024
+from src.hf import hf_login
 
 
 def main():
-    print(get_aime_1983_to_2024())
-    # "argparse>=1.4.0",
-    # "datasets>=3.5.0",
-    # "ipykernel>=6.29.5",
-    # "peft>=0.15.2",
-    # "transformers>=4.51.3",
-    # "vllm>=0.8.4",
+    hf_login()
 
 
 if __name__ == "__main__":
