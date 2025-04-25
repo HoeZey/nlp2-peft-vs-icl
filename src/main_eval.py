@@ -2,8 +2,9 @@ import argparse
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 from datasets import load_dataset
-
+from dotenv import load_dotenv
 from evaluation.evaluate import evaluate, FewshotSampler
+from hf import hf_login
 
 
 def parse_args():
@@ -32,8 +33,9 @@ def parse_args():
 
 
 def main():
+    hf_login()
     args = parse_args()
-    model = LLM()
+    model = LLM(args.model_path)
     sampling_params = SamplingParams(
         max_tokens=args.max_tokens,
     )

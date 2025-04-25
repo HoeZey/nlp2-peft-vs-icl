@@ -17,6 +17,7 @@ cd $HOME/nlp2/
 source activate nlp2
 srun python -u src/main_eval.py \
     --model_path "meta-llama/Llama-2-7b-hf" \
+    --system_prompt_path "config/prompts/gsm8k.txt" \
     --eval_dataset "openai/gsm8k" \
     --batch_size 64 \
     --max_tokens 5000 
