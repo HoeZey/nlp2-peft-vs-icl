@@ -133,6 +133,7 @@ httpx==0.28.1
     #   openai
 huggingface-hub==0.30.2
     # via
+    #   nlp2-peft-vs-icl (pyproject.toml)
     #   datasets
     #   tokenizers
     #   transformers
