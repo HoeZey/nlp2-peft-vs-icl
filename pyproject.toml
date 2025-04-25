@@ -3,10 +3,9 @@ name = "nlp2-peft-vs-icl"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
+    "argparse>=1.4.0",
     "datasets>=3.5.0",
-    "ipykernel>=6.29.5",
-    "torch>=2.6.0",
     "vllm>=0.8.4",
 ]

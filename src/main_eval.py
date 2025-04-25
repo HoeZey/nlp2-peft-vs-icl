@@ -1,5 +1,4 @@
 import argparse
-import torch
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 from datasets import load_dataset
