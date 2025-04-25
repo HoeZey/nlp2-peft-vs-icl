@@ -5,40 +5,53 @@ from vllm.lora.request import LoRARequest
 from datasets import Dataset
 
 
-def add_examples_to_prompt(prompt: str, sampler: RandomSampler) -> str:
-    for question, answer in next(sampler):
-        prompt += question + str(answer)
-    return prompt
+class FewshotSampler:
+    def __init__(self, dataset, k, seed=None):
+        self.dataset = dataset
+        generator = torch.Generator()
+        if seed is not None:
+            generator.manual_seed(seed)
+        self.sampler = RandomSampler(self.dataset, num_samples=k, generator=generator)
+
+    def sample(self):
+        return [self.dataset[i] for i in self.sampler]
 
 
-def extract_answer(text: list[str]) -> torch.IntTensor:
-    return 0
+def extract_answer(generated: list[str]) -> torch.IntTensor:
+    return torch.tensor([int(g.split("####")[-1]) for g in generated], dtype=int)
 
 
 def evaluate(
     model: LLM,
     sampling_params: SamplingParams,
-    lora_request: LoRARequest,
     eval_dataset: Dataset,
     batch_size: int,
-    k=0,
-    icl_dataset: Dataset = None,
+    fewshot_sampler: RandomSampler = None,
+    lora_request: LoRARequest = None,
+    system_prompt: str = "",
 ):
     correct = 0
-    if k > 0:
-        sampler = RandomSampler(icl_dataset, num_samples=k)
 
-    for questions, solutions in DataLoader(eval_dataset):
-        if k > 0:
-            questions = [add_examples_to_prompt(q, sampler) for q in questions]
+    for questions in DataLoader(eval_dataset, batch_size=batch_size, shuffle=False):
+        solutions = extract_answer([q["answer"] for q in questions])
+        prompts = []
+        for q in questions:
+            prompt = system_prompt
+            if fewshot_sampler:
+                for i, example in enumerate(fewshot_sampler.sample()):
+                    prompt += f"Example {i + 1}\nQuestion:\n"
+                    prompt += example["question"] + "\nAnswer:\n"
+                    prompt += example["answer"] + "\n\n"
+            prompt += "Test:\nQuestion:\n" + q["question"]
+            prompts.append(prompt)
 
         outputs = model.generate(
             questions,
             sampling_params,
             lora_request=lora_request,
         )
-        answer = extract_answer(outputs[0].outputs[0].text)
+        answers = extract_answer(outputs[0].outputs[0].text)
 
-        correct += answer == solutions
+        correct += (answers == solutions).sum()
 
     print(f"Accuracy: {100 * correct / len(eval_dataset):.2f}")
