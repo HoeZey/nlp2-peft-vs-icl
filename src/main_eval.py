@@ -28,7 +28,9 @@ def parse_args():
 
     # Generation
     parser.add_argument("--batch_size", type=int, default=256)
-    parser.add_argument("--max_tokens", type=int, default=5000)
+    parser.add_argument("--max_tokens", type=int, default=None)
+    parser.add_argument("--temperature", type=float, default=0.8)
+    parser.add_argument("--top_p", type=float, default=0.95)
     # parser.add_argument("--num_workers", type=int, default=None)
     # parser.add_argument("--output_dir", type=str, default="./outputs/evaluation")
     parser.add_argument("--seed", type=int, default=42)
@@ -46,6 +48,8 @@ def main():
     model = LLM(args.model_path, tensor_parallel_size=args.num_gpus)
     sampling_params = SamplingParams(
         max_tokens=args.max_tokens,
+        temperature=args.temperature,
+        top_p=args.top_p,
     )
     lora_request = LoRARequest(args.lora_path) if args.lora_path else None
     eval_dataset = load_dataset(

@@ -22,11 +22,12 @@ class FewshotSampler:
 
 def extract_answer(g: str):
     answer = re.findall(r"\d+", g)
-    return (
-        min(int(answer[-1]), 999_999_999_999)
-        if answer is not None and len(answer) > 0
-        else -1
-    )
+    try:
+        return min(int(answer[-1]), 999_999_999_999)
+    except:
+        pass
+    finally:
+        return -1
 
 
 def extract_answers(generated: list[str]) -> torch.IntTensor:
@@ -67,8 +68,10 @@ def evaluate(
                 for batch, example in enumerate(fewshot_sampler.sample()):
                     # prompt += f"Example {batch + 1}\n"
                     prompt += f"Q: {example['question']}\n"
-                    split = example["answer"].split(" #### ")
-                    prompt += f"A: {split[0]} The answer is {split[1]}\n\n"
+                    split = example["answer"].split("####")
+                    prompt += (
+                        f"A: {split[0].strip()} The answer is {split[1].strip()}\n\n"
+                    )
             prompt += f"Q: {q}\nA: "
             prompts.append(prompt)
 
