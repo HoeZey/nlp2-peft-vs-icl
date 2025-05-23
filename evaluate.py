@@ -89,39 +89,36 @@ def load_fine_tuned_model(peft_model_path, base_model_name="meta-llama/Llama-2-7
         peft_model_path,
         device_map='auto',
     )
+    model = model.merge_and_unload()
     return model, tokenizer
 
 
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("--peft_model_path", type=str, required=True, help="Path to the fine-tuned model")
-    parser.add_argument("--gen_max_length", type=int, default=512, help="Max length for generation")
-    parser.add_argument("--batch_size", type=int, default=16, help="Batch size for generation")
-    args = parser.parse_args()
-
-    model, tokenizer = load_fine_tuned_model(args.peft_model_path)
-    device = model.device
-
-    test_dataset = load_dataset("openai/gsm8k", "main", split="test")
-    test_dataset = test_dataset.map(rm_calculator_instructions)
-    test_dataset = test_dataset.map(lambda example: tokenizer(formatting_func(example)), batched=True)
-    test_dataset = test_dataset.select_columns(["input_ids", "attention_mask", "answer"])
+def prepare_dataloader(tokenizer, dataset, batch_size=16):
+    dataset = dataset.map(rm_calculator_instructions)
+    dataset = dataset.map(lambda example: tokenizer(formatting_func(example)), batched=True)
+    dataset = dataset.select_columns(["input_ids", "attention_mask", "answer"])
 
     collator = CustomDataCollator(
         tokenizer=tokenizer,
         preserve_fields_keys=["answer"],
     )
-    test_dataloader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=args.batch_size,
+    dataloader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
         collate_fn=collator,
         num_workers=4,
     )
+    return dataloader
+
+
+def evaluate_model(model, tokenizer, dataset, batch_size=16):
+    device = model.device
+    data_loader = prepare_dataloader(tokenizer, dataset, batch_size=batch_size)
 
     correct_count = 0
-    for batch in tqdm(test_dataloader):
-        input_ids = batch["input_ids"].to("cuda")
-        attention_mask = batch["attention_mask"].to("cuda")
+    for batch in tqdm(data_loader):
+        input_ids = batch["input_ids"].to(device)
+        attention_mask = batch["attention_mask"].to(device)
         answers = batch["answer"]
 
         with torch.no_grad(), torch.autocast(device_type=device.type, dtype=torch.bfloat16):
@@ -137,6 +134,25 @@ if __name__ == "__main__":
         for completion, answer in zip(completions, answers):
             if is_correct(completion, answer):
                 correct_count += 1
+    return {
+        "num_correct": correct_count,
+        "num_total": len(data_loader.dataset),
+        "accuracy": correct_count / len(data_loader.dataset),
+    }
 
-    print(f"Correct: {correct_count}, Total: {len(test_dataset)}")
-    print(f"Accuracy: {correct_count / len(test_dataset):.2%}")
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--peft_model_path", type=str, required=True, help="Path to the fine-tuned model")
+    parser.add_argument("--gen_max_length", type=int, default=512, help="Max length for generation")
+    parser.add_argument("--batch_size", type=int, default=16, help="Batch size for generation")
+    args = parser.parse_args()
+
+    model, tokenizer = load_fine_tuned_model(args.peft_model_path)
+    device = model.device
+
+    test_dataset = load_dataset("openai/gsm8k", "main", split="test")
+    results = evaluate_model(model, tokenizer, test_dataset, batch_size=args.batch_size)
+
+    print(f"Correct: {results["num_correct"]}, Total: {results["num_total"]}")
+    print(f"Accuracy: {results["accuracy"]:.2%}")
