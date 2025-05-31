@@ -1,8 +1,8 @@
-from data import get_aime_1983_to_2024
+from src.hf import hf_login
 
 
 def main():
-    print(get_aime_1983_to_2024())
+    hf_login()
 
 
 if __name__ == "__main__":
