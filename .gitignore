@@ -176,4 +176,7 @@ cython_debug/
 # Environment files
 *.env
 
-outputs/*
+# outputs/*
+jobs/*
+
+model_outputs/*/*_output.json
