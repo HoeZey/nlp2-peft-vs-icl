@@ -1,0 +1,88 @@
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+INFO 06-01 13:50:22 [__init__.py:239] Automatically detected platform cuda.
+Namespace(model_path='meta-llama/Llama-3.1-8B', system_prompt_path='config/prompts/math.txt', lora_path='lora_checkpoints/run-1/', num_gpus=2, eval_dataset='nlile/hendrycks-MATH-benchmark', eval_dataset_config_name=None, eval_split='test', icl_dataset=None, icl_dataset_config_name=None, icl_split='train', k=0, sampling_strategy='random', embedder='math-similarity/Bert-MLM_arXiv-MP-class_zbMath', batch_size=500, n=5, max_tokens=8000, temperature=0.6, top_p=0.95, seed=42, output_dir='./model_outputs/math')
+Using MATH processor
+INFO 06-01 13:50:34 [config.py:689] This model supports multiple tasks: {'classify', 'reward', 'embed', 'generate', 'score'}. Defaulting to 'generate'.
+INFO 06-01 13:50:34 [config.py:1713] Defaulting to use mp for distributed inference
+INFO 06-01 13:50:34 [config.py:1901] Chunked prefill is enabled with max_num_batched_tokens=16384.
+WARNING 06-01 13:50:34 [config.py:2589] LoRA with chunked prefill is still experimental and may be unstable.
+INFO 06-01 13:50:35 [core.py:61] Initializing a V1 LLM engine (v0.8.4) with config: model='meta-llama/Llama-3.1-8B', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=131072, download_dir=None, load_format=LoadFormat.AUTO, tensor_parallel_size=2, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='auto', reasoning_backend=None), observability_config=ObservabilityConfig(show_hidden_metrics=False, otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=None, served_model_name=meta-llama/Llama-3.1-8B, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"level":3,"custom_ops":["none"],"splitting_ops":["vllm.unified_attention","vllm.unified_attention_with_output"],"use_inductor":true,"compile_sizes":[],"use_cudagraph":true,"cudagraph_num_of_warmups":1,"cudagraph_capture_sizes":[512,504,496,488,480,472,464,456,448,440,432,424,416,408,400,392,384,376,368,360,352,344,336,328,320,312,304,296,288,280,272,264,256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"max_capture_size":512}
+INFO 06-01 13:50:35 [shm_broadcast.py:264] vLLM message queue communication handle: Handle(local_reader_ranks=[0, 1], buffer_handle=(2, 10485760, 10, 'psm_c75c99ef'), local_subscribe_addr='ipc:///scratch-local/scur2187.12116149/cb685399-badb-426c-831f-a9a27ebbed73', remote_subscribe_addr=None, remote_addr_ipv6=False)
+WARNING 06-01 13:50:36 [utils.py:2444] Methods determine_num_available_blocks,device_config,get_cache_block_size_bytes,initialize_cache not implemented in <vllm.v1.worker.gpu_worker.Worker object at 0x147556cade50>
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:36 [shm_broadcast.py:264] vLLM message queue communication handle: Handle(local_reader_ranks=[0], buffer_handle=(1, 10485760, 10, 'psm_87d5ccdd'), local_subscribe_addr='ipc:///scratch-local/scur2187.12116149/255486e7-c4d0-4ccf-b833-be52e3cd58ce', remote_subscribe_addr=None, remote_addr_ipv6=False)
+WARNING 06-01 13:50:37 [utils.py:2444] Methods determine_num_available_blocks,device_config,get_cache_block_size_bytes,initialize_cache not implemented in <vllm.v1.worker.gpu_worker.Worker object at 0x147556caea10>
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:37 [shm_broadcast.py:264] vLLM message queue communication handle: Handle(local_reader_ranks=[0], buffer_handle=(1, 10485760, 10, 'psm_f3a82e22'), local_subscribe_addr='ipc:///scratch-local/scur2187.12116149/a0988c63-05eb-485d-a25c-6ebf6d744e77', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:38 [utils.py:993] Found nccl from library libnccl.so.2
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:38 [utils.py:993] Found nccl from library libnccl.so.2
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:38 [pynccl.py:69] vLLM is using nccl==2.21.5
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:38 [pynccl.py:69] vLLM is using nccl==2.21.5
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:39 [custom_all_reduce_utils.py:244] reading GPU P2P access cache from /home/scur2187/.cache/vllm/gpu_p2p_access_cache_for_0,1.json
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:39 [custom_all_reduce_utils.py:244] reading GPU P2P access cache from /home/scur2187/.cache/vllm/gpu_p2p_access_cache_for_0,1.json
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:39 [shm_broadcast.py:264] vLLM message queue communication handle: Handle(local_reader_ranks=[1], buffer_handle=(1, 4194304, 6, 'psm_37cce6dd'), local_subscribe_addr='ipc:///scratch-local/scur2187.12116149/a5d07a44-27d7-47e2-b321-ccc10b866a89', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:39 [parallel_state.py:959] rank 1 in world size 2 is assigned as DP rank 0, PP rank 0, TP rank 1
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:39 [parallel_state.py:959] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, TP rank 0
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:39 [cuda.py:221] Using Flash Attention backend on V1 engine.
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:39 [cuda.py:221] Using Flash Attention backend on V1 engine.
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:39 [gpu_model_runner.py:1276] Starting to load model meta-llama/Llama-3.1-8B...
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:39 [gpu_model_runner.py:1276] Starting to load model meta-llama/Llama-3.1-8B...
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m WARNING 06-01 13:50:39 [topk_topp_sampler.py:69] FlashInfer is not available. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please install FlashInfer.
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m WARNING 06-01 13:50:39 [topk_topp_sampler.py:69] FlashInfer is not available. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please install FlashInfer.
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:39 [weight_utils.py:265] Using model weights format ['*.safetensors']
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:39 [weight_utils.py:265] Using model weights format ['*.safetensors']
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:40 [weight_utils.py:281] Time spent downloading weights for meta-llama/Llama-3.1-8B: 0.617828 seconds
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:00<00:02,  1.08it/s]
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:01<00:01,  1.03it/s]
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:43 [loader.py:458] Loading weights took 3.08 seconds
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:43 [punica_selector.py:18] Using PunicaWrapperGPU.
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:02<00:00,  1.58it/s]
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:44 [gpu_model_runner.py:1291] Model loading took 7.5788 GiB and 4.672458 seconds
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.44it/s]
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.36it/s]
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m 
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:44 [loader.py:458] Loading weights took 3.00 seconds
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:44 [punica_selector.py:18] Using PunicaWrapperGPU.
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:45 [gpu_model_runner.py:1291] Model loading took 7.5788 GiB and 5.689053 seconds
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:59 [backends.py:416] Using cache directory: /home/scur2187/.cache/vllm/torch_compile_cache/45df4bec3a/rank_1_0 for vLLM's torch.compile
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:50:59 [backends.py:426] Dynamo bytecode transform time: 10.73 s
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:59 [backends.py:416] Using cache directory: /home/scur2187/.cache/vllm/torch_compile_cache/45df4bec3a/rank_0_0 for vLLM's torch.compile
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:50:59 [backends.py:426] Dynamo bytecode transform time: 10.90 s
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:51:00 [backends.py:115] Directly load the compiled graph for shape None from the cache
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:51:00 [backends.py:115] Directly load the compiled graph for shape None from the cache
+[1;36m(VllmWorker rank=0 pid=2801410)[0;0m INFO 06-01 13:51:09 [monitor.py:33] torch.compile takes 10.90 s in total
+[1;36m(VllmWorker rank=1 pid=2801428)[0;0m INFO 06-01 13:51:09 [monitor.py:33] torch.compile takes 10.73 s in total
+INFO 06-01 13:51:09 [kv_cache_utils.py:634] GPU KV cache size: 1,148,928 tokens
+INFO 06-01 13:51:09 [kv_cache_utils.py:637] Maximum concurrency for 131,072 tokens per request: 8.77x
+INFO 06-01 13:51:09 [kv_cache_utils.py:634] GPU KV cache size: 1,148,928 tokens
+INFO 06-01 13:51:09 [kv_cache_utils.py:637] Maximum concurrency for 131,072 tokens per request: 8.77x
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 12116149 ON gcn131 CANCELLED AT 2025-06-01T13:56:52 ***
+slurmstepd: error: *** STEP 12116149.0 ON gcn131 CANCELLED AT 2025-06-01T13:56:52 ***
+
+JOB STATISTICS
+==============
+Job ID: 12116149
+Cluster: snellius
+User/Group: scur2187/scur2187
+State: CANCELLED (exit code 0)
+Nodes: 1
+Cores per node: 32
+CPU Utilized: 00:00:23
+CPU Efficiency: 0.18% of 03:34:56 core-walltime
+Job Wall-clock time: 00:06:43
+Memory Utilized: 3.29 GB
+Memory Efficiency: 0.91% of 360.00 GB (360.00 GB/node)

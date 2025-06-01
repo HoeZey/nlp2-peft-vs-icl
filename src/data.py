@@ -5,6 +5,8 @@ from torch import IntTensor
 
 
 def remove_left_right_cmds(s: str) -> str:
+    if s is None:
+        return None
     return s.replace("\\left", "").replace("\\right", "").replace(" ", "")
 
 
@@ -115,7 +117,10 @@ class MATHProcessor:
 
     def get_answer_from_outputs(self, generated) -> list[str]:
         return [
-            majority_vote([last_boxed_only_string(g) for g in gen]) for gen in generated
+            majority_vote(
+                [remove_left_right_cmds(last_boxed_only_string(g)) for g in gen]
+            )
+            for gen in generated
         ]
 
     def process_examples(self, examples) -> str:

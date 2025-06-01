@@ -96,11 +96,10 @@ def main():
         system_prompt = ""
 
     output_dir = Path(args.output_dir)
-    answers_file = (
-        f"{'_'.join(args.model_path.split('/'))}_k={args.k}{sampling}_answers.json"
-    )
+    lora = "_lora" if args.lora_path else ""
+    answers_file = f"{'_'.join(args.model_path.split('/'))}{lora}_k={args.k}{sampling}_answers.json"
     output_file = (
-        f"{'_'.join(args.model_path.split('/'))}_k={args.k}{sampling}_output.json"
+        f"{'_'.join(args.model_path.split('/'))}{lora}_k={args.k}{sampling}_output.json"
     )
 
     if not (output_dir / answers_file).exists():
@@ -111,7 +110,21 @@ def main():
         output_dir.mkdir(exist_ok=True, parents=True)
         json.dump({}, (output_dir / output_file).open("w"))
 
-    model = LLM(args.model_path, tensor_parallel_size=args.num_gpus)
+    lora_request = (
+        LoRARequest(
+            lora_name="lora_adapter",
+            lora_int_id=1,
+            lora_path=args.lora_path,
+        )
+        if args.lora_path
+        else None
+    )
+    model = LLM(
+        args.model_path,
+        tensor_parallel_size=args.num_gpus,
+        enable_lora=args.lora_path is not None,
+        enforce_eager=False,
+    )
     sampling_params = SamplingParams(
         n=args.n,
         max_tokens=args.max_tokens,
@@ -122,7 +135,6 @@ def main():
             model.get_tokenizer().convert_tokens_to_ids("<|eot_id|>"),
         ],
     )
-    lora_request = LoRARequest(args.lora_path) if args.lora_path else None
 
     evaluate(
         model,

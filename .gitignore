@@ -180,3 +180,5 @@ cython_debug/
 jobs/*
 
 model_outputs/*/*_output.json
+
+lora_checkpoints/*
