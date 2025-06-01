@@ -1,0 +1,22 @@
+#!/bin/bash
+
+## Run with 'sbatch -J job_name job_script'
+
+#SBATCH --job-name=retrain-lora
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=1:00:00
+#SBATCH --output=slurm_out/output_%x_%j.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate nlp2
+cd $HOME/nlp2-peft-vs-icl
+
+#srun python train.py --model_type llama3
+#accelerate launch train.py --model_type llama3 --config output/toasty-sweep-25/train_config-2.yaml
+accelerate launch train.py --model_type llama3 --config output/toasty-sweep-25/train_config-3.yaml

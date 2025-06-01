@@ -1,0 +1,22 @@
+#!/bin/bash
+
+## Run with 'sbatch -J job_name job_script'
+
+#SBATCH --job-name=lora-eval
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=2:00:00
+#SBATCH --output=slurm_out/output_%x_%j.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate nlp2
+cd $HOME/nlp2-peft-vs-icl
+
+#accelerate launch evaluate.py --model_type llama3 --peft_model_path output/toasty-sweep-25/ --batch_size 32
+#accelerate launch evaluate.py --model_type llama3 --peft_model_path output/glamorous-monkey-231/ --batch_size 32
+accelerate launch evaluate.py --model_type llama3 --peft_model_path output/zany-snowflake-232/ --batch_size 32
