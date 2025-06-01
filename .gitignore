@@ -175,3 +175,8 @@ cython_debug/
 
 # Environment files
 *.env
+
+# outputs/*
+model_outputs/
+outputs/
+lora_checkpoints/
