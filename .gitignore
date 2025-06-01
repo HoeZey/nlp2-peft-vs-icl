@@ -177,8 +177,6 @@ cython_debug/
 *.env
 
 # outputs/*
-jobs/*
-
-model_outputs/*/*_output.json
-
-lora_checkpoints/*
+model_outputs/
+outputs/
+lora_checkpoints/

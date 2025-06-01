@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_h100
+#SBATCH --gpus=2
+#SBATCH --job-name=IM4S
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --time=8:00:00
+#SBATCH --output=outputs/math/eval/I/%A_llama3_I_4s_s.out
+
+module purge
+module load 2024
+module load Anaconda3/2024.06-1
+
+cd $HOME/nlp2/
+
+source activate nlp2
+srun python -u src/main_eval.py \
+    --model_path "meta-llama/Llama-3.1-8B-Instruct" \
+    --num_gpus 2 \
+    --system_prompt_path "config/prompts/math_fewshot.txt" \
+    --eval_dataset "nlile/hendrycks-MATH-benchmark" \
+    --icl_dataset "nlile/hendrycks-MATH-benchmark" \
+    --k 4 \
+    --sampling_strategy "similarity" \
+    --embedder "sentence-transformers/all-MiniLM-L6-v2" \
+    --batch_size 500 \
+    --max_tokens 16000 \
+    --n 15 \
+    --temperature 0.6 \
+    --top_p 0.95 \
+    --output_dir "./model_outputs/math"
+conda deactivate
