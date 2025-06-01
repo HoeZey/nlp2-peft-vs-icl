@@ -7,8 +7,10 @@ from dotenv import load_dotenv
 import os
 from argparse import ArgumentParser
 from tqdm import tqdm
+import json
+import huggingface_hub
 
-load_dotenv()
+from utils import models
 
 
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
@@ -68,7 +70,8 @@ def load_fine_tuned_model(peft_model_path, base_model_name="meta-llama/Llama-2-7
         base_model_name,
         token=os.getenv("HUGGINGFACE_TOKEN"),
     )
-    tokenizer.pad_token_id = tokenizer.unk_token_id
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.padding_side = "left"
 
     bnb_config = BitsAndBytesConfig(
@@ -81,15 +84,15 @@ def load_fine_tuned_model(peft_model_path, base_model_name="meta-llama/Llama-2-7
         base_model_name,
         token=os.getenv("HUGGINGFACE_TOKEN"),
         quantization_config=bnb_config,
-        device_map='auto',
+        #device_map='auto',
     )
     
     model = PeftModel.from_pretrained(
         base_model,
         peft_model_path,
-        device_map='auto',
+        #device_map='auto',
     )
-    model = model.merge_and_unload()
+    #model = model.merge_and_unload()
     return model, tokenizer
 
 
@@ -111,7 +114,7 @@ def prepare_dataloader(tokenizer, dataset, batch_size=16):
     return dataloader
 
 
-def evaluate_model(model, tokenizer, dataset, batch_size=16):
+def evaluate_model(model, tokenizer, dataset, batch_size=16, gen_max_length=512):
     device = model.device
     data_loader = prepare_dataloader(tokenizer, dataset, batch_size=batch_size)
 
@@ -125,12 +128,15 @@ def evaluate_model(model, tokenizer, dataset, batch_size=16):
             outputs = model.generate(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
-                max_length=args.gen_max_length,
+                max_length=gen_max_length,
                 do_sample=False,
+                temperature=None,
+                top_p=None,
+                top_k=None,
+                pad_token_id=tokenizer.pad_token_id,
             ).cpu()
     
         completions = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-
         for completion, answer in zip(completions, answers):
             if is_correct(completion, answer):
                 correct_count += 1
@@ -142,17 +148,27 @@ def evaluate_model(model, tokenizer, dataset, batch_size=16):
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    huggingface_hub.login(token=os.getenv("HUGGINGFACE_TOKEN"))
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    
     parser = ArgumentParser()
+    parser.add_argument("--model_type", type=str, choices=models.keys(), required=True, help="Type of model to evaluate (e.g., llama2, llama3).")
     parser.add_argument("--peft_model_path", type=str, required=True, help="Path to the fine-tuned model")
     parser.add_argument("--gen_max_length", type=int, default=512, help="Max length for generation")
     parser.add_argument("--batch_size", type=int, default=16, help="Batch size for generation")
     args = parser.parse_args()
 
-    model, tokenizer = load_fine_tuned_model(args.peft_model_path)
+    model, tokenizer = load_fine_tuned_model(args.peft_model_path, base_model_name=models[args.model_type])
     device = model.device
 
     test_dataset = load_dataset("openai/gsm8k", "main", split="test")
-    results = evaluate_model(model, tokenizer, test_dataset, batch_size=args.batch_size)
-
+    results = evaluate_model(model, tokenizer, test_dataset, batch_size=args.batch_size, gen_max_length=args.gen_max_length)
+    print("Evaluation Results:")
     print(f"Correct: {results["num_correct"]}, Total: {results["num_total"]}")
     print(f"Accuracy: {results["accuracy"]:.2%}")
+    
+    results_path = os.path.join(args.peft_model_path, "evaluation_results.json")
+    with open(results_path, "w") as f:
+        json.dump(results, f, indent=4)
+    print(f"Results saved to {results_path}")

@@ -1,6 +1,7 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments
-from peft import LoraConfig
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, PeftModel
+import huggingface_hub
 from datasets import load_dataset
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 from dotenv import load_dotenv
@@ -10,13 +11,8 @@ import argparse
 import wandb
 import math
 
+from utils import models
 from evaluate import evaluate_model
-
-
-models = {
-    "llama2": "meta-llama/Llama-2-7b-hf",
-    "llama3": "meta-llama/Llama-3.1-8B",
-}
 
 sweep_config = {
     "name": "lora-sweep",
@@ -76,8 +72,10 @@ def train(model_type, config={}):
         model_name,
         token=os.getenv("HUGGINGFACE_TOKEN"),
     )
-    # tokenizer.add_special_tokens({'pad_token': '<PAD>'})
-    tokenizer.pad_token_id = tokenizer.unk_token_id
+    #tokenizer.add_special_tokens({'pad_token': '<PAD>'})
+    #tokenizer.pad_token_id = tokenizer.unk_token_id
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.pad_token_id = tokenizer.eos_token_id
 
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -90,9 +88,10 @@ def train(model_type, config={}):
         model_name,
         token=os.getenv("HUGGINGFACE_TOKEN"),
         quantization_config=bnb_config,
-        device_map='auto',
+        # device_map='auto',
         # pad_token_id=tokenizer.pad_token_id,
     )
+    # model = prepare_model_for_kbit_training(model)
     print("device:", model.device)
 
     lora_config = dict(
@@ -109,6 +108,11 @@ def train(model_type, config={}):
     )
     
     model.add_adapter(lora_config)
+    # model = get_peft_model(
+    #     model,
+    #     lora_config,
+    # )
+    # model.print_trainable_parameters()
     print(model)
 
     dataset = load_dataset("openai/gsm8k", "main")
@@ -127,12 +131,12 @@ def train(model_type, config={}):
         optim="paged_adamw_32bit",
         bf16=True,
         eval_strategy="steps",
-        logging_steps=10,
+        logging_steps=5,
         eval_steps=20,
         save_steps=50,
         learning_rate=1e-4,
         # max_grad_norm=0.3,
-        # max_steps=500,
+        #max_steps=1,
         num_train_epochs=1,
         warmup_steps=10,
         weight_decay=0.01,
@@ -160,6 +164,23 @@ def train(model_type, config={}):
     )
     trainer.train()
     trainer.save_model(f"output/{wandb.run.name}")
+   
+
+    #model = PeftModel(model)
+    # model = model.merge_and_unload()
+    tokenizer.padding_side = "left"
+    
+    num_examples = 3
+    for i in range(num_examples):
+        example = dataset["test"][i]
+        print(f"============ Example {i + 1}: ============")
+        print(example)
+        prompt = f"### Question: {example['question']}\n### Answer:"
+        output = model.generate(
+            **tokenizer(prompt, return_tensors="pt").to(model.device),
+            do_sample=False
+        )
+        print("Model answer:", tokenizer.decode(output[0]), sep="\n")
     
     eval_results = evaluate_model(
         model,
@@ -168,15 +189,18 @@ def train(model_type, config={}):
         batch_size=16,
     )
     print("Validation accuracy:", eval_results["accuracy"])
-    wandb.log("val_accuracy", eval_results["accuracy"])
+    wandb.log({"val_accuracy": eval_results["accuracy"]})
 
 
 def train_sweep(model_type):
-    train(model_type, config=wandb.config)
-    
+    wandb.init()
+    train(model_type, config=dict(wandb.config))
+
 if __name__ == "__main__":
     load_dotenv()
-    
+    huggingface_hub.login(token=os.getenv("HUGGINGFACE_TOKEN"))
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
     parser = argparse.ArgumentParser(description="Train a model with LoRA.")
     parser.add_argument(
         "--model_type",
@@ -191,26 +215,38 @@ if __name__ == "__main__":
         help="Run a hyperparameter sweep."
     )
     parser.add_argument(
+        "--sweep_id",
+        help="ID of the sweep to pass to the agent",
+    )
+    parser.add_argument(
         "--num_runs",
         type=int,
         default=1,
         help="Number of runs for the sweep."
     )
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Path to a yaml config with lora and training arguments (only if --sweep is not set)",
+    )
     
     args = parser.parse_args()
     if args.sweep:
-        sweep_id = wandb.sweep(
-            sweep=sweep_config, project="nlp2", entity="leonardhorns"
-        )
         wandb.agent(
-            sweep_id,
+            args.sweep_id,
             function=lambda: train_sweep(args.model_type),
             count=args.num_runs,
+            entity="leonardhorns",
+            project="nlp2",
         )
     else:
+        if args.config is not None:
+            import yaml
+            with open(args.config, "r") as f:
+                config = yaml.safe_load(f)
+        
         wandb.init(
             project="nlp2",
             entity="leonardhorns",
         )
-        train(args.model_type)
-    wandb.finish()
+        train(args.model_type, config=config)
